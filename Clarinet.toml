@@ -15,6 +15,11 @@ path = 'contracts/marketplace.clar'
 clarity_version = 3
 epoch = 'latest'
 
+[contracts.marketplace-4]
+path = 'contracts/marketplace-4.clar'
+clarity_version = 4
+epoch = 'latest'
+
 [contracts.marketplace-admin]
 path = 'contracts/marketplace-admin.clar'
 clarity_version = 3
