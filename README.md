@@ -2,6 +2,8 @@
 
 This document tracks all automated test executions performed on the `marketplace-double` smart contract from initial deployment to the present date.
 
+View the contract on the [Hiro Testnet Explorer](https://explorer.hiro.so/address/ST1M33KB90FAQYD26MHPQGJ13HEGKFYWNAQMCKEBR?chain=testnet)
+
 All tests were executed using:
 * **Clarinet simnet**
 * **Vitest** test runner
@@ -176,4 +178,3 @@ Planned future coverage to increase robustness:
 * ❏ Fulfil with incorrect token
 * ❏ Property-Based Testing using rendezvous
 * ❏ Invariant Testing using rendezvous
-
