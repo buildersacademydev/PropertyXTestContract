@@ -1196,6 +1196,91 @@ describe("Error Cases", () => {
       ],
       deployer
     );
-    expect(secondClaimResponse.result).toBeErr(Cl.uint(2015)); // ERR_CLAIM_AMOUNT_ZERO
-  });
-});
+        expect(secondClaimResponse.result).toBeErr(Cl.uint(2015)); // ERR_CLAIM_AMOUNT_ZERO
+      });
+    });
+    
+    describe("Emergency Stop", () => {
+      beforeEach(() => {
+        simnet.setEpoch("3.0");
+      });
+    
+      it("should not allow a non-owner to pause the contract", () => {
+        const pauseResponse = simnet.callPublicFn(
+          marketplace,
+          "set-emergency-stop",
+          [Cl.bool(true)],
+          wallet1 // non-owner
+        );
+        expect(pauseResponse.result).toBeErr(Cl.uint(2001)); // ERR_UNAUTHORIZED
+      });
+    
+      it("should allow the owner to pause and unpause the contract", () => {
+        // Pause the contract
+        let pauseResponse = simnet.callPublicFn(
+          marketplace,
+          "set-emergency-stop",
+          [Cl.bool(true)],
+          deployer // owner
+        );
+        expect(pauseResponse.result).toBeOk(Cl.bool(true));
+    
+        // Verify contract is paused
+        let isPaused = simnet.callReadOnlyFn(
+          marketplace,
+          "get-emergency-stop",
+          [],
+          deployer
+        );
+        expect(isPaused.result).toBeBool(true);
+    
+        // Unpause the contract
+        pauseResponse = simnet.callPublicFn(
+          marketplace,
+          "set-emergency-stop",
+          [Cl.bool(false)],
+          deployer // owner
+        );
+        expect(pauseResponse.result).toBeOk(Cl.bool(true));
+    
+        // Verify contract is not paused
+        isPaused = simnet.callReadOnlyFn(
+          marketplace,
+          "get-emergency-stop",
+          [],
+          deployer
+        );
+        expect(isPaused.result).toBeBool(false);
+      });
+    
+      it("should not allow listing an asset when the contract is paused", () => {
+        // Pause the contract
+        simnet.callPublicFn(
+          marketplace,
+          "set-emergency-stop",
+          [Cl.bool(true)],
+          deployer
+        );
+    
+        // Attempt to list an asset
+        const listing = Cl.tuple({
+          amt: Cl.uint(1000000000),
+          expiry: Cl.uint(10000),
+          price: Cl.uint(4),
+          "payment-asset-contract": Cl.none()
+        });
+    
+        const listAssetResponse = simnet.callPublicFn(
+          marketplace,
+          "list-asset-ft",
+          [
+            Cl.contractPrincipal(deployer, "mock-token-a"),
+            Cl.contractPrincipal(deployer, "mock-token-a"),
+            listing
+          ],
+          deployer
+        );
+        expect(listAssetResponse.result).toBeErr(Cl.uint(3000)); // ERR_PAUSED
+      });
+    });
+    
